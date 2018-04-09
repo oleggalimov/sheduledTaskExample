@@ -1,0 +1,19 @@
+group 'su.executable'
+version '1'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName="su.executable.Main"
+
+dependencies {
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.2'
+}
+
+
