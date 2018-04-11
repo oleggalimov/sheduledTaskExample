@@ -1,18 +1,32 @@
-package su.executable;
+import dto.subsystems;
+
+import org.hibernate.Session;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import utils.hibernateUtil;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
 
-    static final int minutes_for_reex = 120;
+    static final int minutes_for_reex = 1;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleWithFixedDelay(new readSubSystems(), 1,minutes_for_reex, TimeUnit.HOURS);
+//        executorService.scheduleWithFixedDelay(new readSubSystems(), 1,minutes_for_reex, TimeUnit.HOURS);
+        executorService.scheduleWithFixedDelay(new readSubSystemsWithHibernate(), 1,minutes_for_reex, TimeUnit.SECONDS);
+
     }
+
+
 }
 class readSubSystems implements Runnable {
     static final String USER = "postgres";
@@ -50,5 +64,24 @@ class readSubSystems implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+}
+
+class readSubSystemsWithHibernate implements Runnable {
+    subsystems pg = new subsystems("Новая система", "NewSys");
+    SessionFactory factory = hibernateUtil.getSessionFactory();
+    Session session = factory.openSession();
+
+    @Override
+    public void run() {
+        Query q =  session.getNamedQuery("getAll");
+        List <subsystems> list = q.list();
+        list.forEach(s->System.out.println(s.getName()));
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        session.close();
+        factory.close();
     }
 }
